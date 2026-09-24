@@ -1,12 +1,17 @@
 #include <stdbool.h>
 #include <stdio.h>
-int memoria[100];
-   
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+int memoria[1000];
+   float memoriaFloat[1000];
     int stw=0;
     int acumulador= 0;
     int codigoOperacion=0;
     int operando = 0;
     int registroInstruccion=0;
+    float acumuladorFloat;
+//----------------------------------------------------------------
 void vaciadoMemoria(int instruccionContador, int acumulador,  int registroInstruccion, int codigoOperacion, int operando, int memoria[]){
 	int j, i;
 	
@@ -24,20 +29,24 @@ for(j=0;j<10;j++){
 }
 printf("\n");
 
-for(i=0;i<10;i++){
-    printf("%2d    ", i);
+for(i=0;i<100;i++){
+    printf("%3d    ", i*10);
 
     for(j=0;j<10;j++){
-        printf("%+07d ", memoria[i * 10 + j]);
+        printf("%+06d ", memoria[i * 10 + j]);
     }
 
     printf("\n");
 }
 			}
+//-----------------------------------------------------------------------			
+			
 int main(){
 		int menu=0;
      	int i;
      	int j;
+     	int carga=0;
+     	char cadena[100];
     printf("** ¡Bienvenido a Simpletron!**\n");
     printf("**Introduzca su programa una instruccion**\n");
     printf("** (o palabra de datos) a la vez en linea *** \n");
@@ -46,31 +55,62 @@ int main(){
      printf("** tecleara entonces la palabra para esa**\n");
       printf("** posicion. haga clic en el boton LISTO PARA**\n");
        printf("** dejar de introducir su programa**\n");
-
-      
+		
 	
-        for( i = 0;i<100;i++){
+//cargado dessde archivo------------------------------------------------------
+      FILE * archivo = fopen("programa.simp", "r");
+		if(archivo != NULL){
+			printf("leyendo archivo");
+			for( i = 0;i<1000;i++){
+				int resultado;
+				resultado =fscanf(archivo," %d", &memoria[i]) ;
+					if (resultado ==EOF){
+						printf("archivo leido");
+						break;
+					}
+					
+					if(resultado == 0){
+						printf("dato invalido en la linea %d", i);
+						return 0;
+					}
+					if(memoria[i] < -99999 || memoria[i] > 99998){
+            	 printf("dato invalido en la linea %d", i);
+						return 0;
+			}
+					
+			}
+			fclose(archivo);
+		}
+//cargado manualmente--------------------------------------------------
+		else{
+		
+		
+		printf("no existe archivo, cargar manualmente\n");
+        for( i = 0;i<1000;i++){
         	bool valorValido=false;
         	
         	while(valorValido==false){
 			
             printf("%02d ? + ",i);
             scanf("%d", &memoria[i] );
-             if(memoria[i]==9999){
+             if(memoria[i]==99999){
              	memoria[i]=0;
-            	menu=9999;
+            	menu=99999;
             break;
 			}
-            if(memoria[i]<-9999 || memoria[i]>9998){
+            if(memoria[i]<-99999 || memoria[i]>99998){
             	 printf("valor invalido");
         		valorValido=false;
 			}else
 			valorValido=true;
            }
-           if(menu==9999)
+           if(menu==99999)
            break;
         }
+        }
     
+	
+//termino de cargar programa-----------------------------------------------
 
         
          	printf("**se termino de cargar el programa**\n");
@@ -79,9 +119,13 @@ int main(){
 		int menu2=0;
 		while(menu2!=99){
 			registroInstruccion = memoria[instruccionContador];
-        codigoOperacion =  registroInstruccion / 100;
-        operando = registroInstruccion % 100;
-        
+        codigoOperacion =  registroInstruccion / 1000;
+        operando = registroInstruccion % 1000;
+        if(operando < 0 || operando > 999){
+        	printf("error fatal: operando negativo");
+        	vaciadoMemoria(instruccionContador,  acumulador,   registroInstruccion,  codigoOperacion,operando,memoria);
+			return 0;
+		}
         switch(codigoOperacion)
         {
         	//read
@@ -95,6 +139,94 @@ int main(){
         			printf("%02d", memoria[operando]);
         			instruccionContador++;
         			break;
+        			//salto de linea
+        			case 12:
+        				printf("\n");
+        				instruccionContador++;
+        			break;
+        			//entrada de cadena
+        			case 13:
+        				    printf("Ingrese una cadena: ");
+   						 scanf("%99s", cadena);
+    						memoria[operando] = strlen(cadena) * 1000;
+    						for(i = 0; cadena[i] != '\0'; i++){
+    						int ascii = cadena[i];
+    						memoria[operando + i + 1] = (i + 1) * 1000 + ascii;
+								}
+   							 instruccionContador++;
+        				break;
+        				//salida de cadena
+        				case 14:{
+						
+        					    printf("Cadena: ");
+    							int longitud = memoria[operando] / 1000;
+    							for(i = 1; i <= longitud; i++){
+    							int ascii = memoria[operando + i] % 1000;
+    							printf("%c", ascii);
+									}			
+    							printf("\n");
+   								 instruccionContador++;
+        					break;
+						}
+						
+						////////////////FLOTANTES-------------------
+						//agregar flotante
+					case 15: {
+						    printf("Ingrese un numero decimal: ");
+						    scanf("%f", &memoriaFloat[operando]);
+						    instruccionContador++;
+						    break;
+						}
+						//salida de flotante
+						case 16: {
+						    printf("%.2f\n", acumuladorFloat);
+						    instruccionContador++;
+						    break;
+						}
+						// cargar flotante al acumulador flotante
+						case 17: {
+						    acumuladorFloat = memoriaFloat[operando];
+						    instruccionContador++;
+						    break;
+						}
+						
+						// sumar flotante
+						case 18: {
+						    acumuladorFloat += memoriaFloat[operando];
+						    instruccionContador++;
+						    break;
+						}
+						
+						// restar flotante
+						case 19: {
+						    acumuladorFloat -= memoriaFloat[operando];
+						    instruccionContador++;
+						    break;
+						}
+						
+						// multiplicar flotante
+						case 22: {
+						    acumuladorFloat *= memoriaFloat[operando];
+						    instruccionContador++;
+						    break;
+						}
+						
+						// dividir flotante
+						case 23: {
+						    if(memoriaFloat[operando] == 0){
+						        printf("Error fatal: division entre cero\n");
+						        vaciadoMemoria(instruccionContador, acumulador,
+						                       registroInstruccion, codigoOperacion,
+						                       operando, memoria);
+						        return 0;
+						    }
+						
+						    acumuladorFloat /= memoriaFloat[operando];
+						    instruccionContador++;
+						    break;
+						}
+						
+						
         			//load
         			case 20:
         			acumulador = memoria[operando];
@@ -103,7 +235,7 @@ int main(){
         			//sumar
         			case 30:
         				acumulador+= memoria[operando];
-        				if(acumulador > 9999 || acumulador < -9999){
+        				if(acumulador > 99999 || acumulador < -99999){
     					// error fatal
     					printf("error fatal desbordamiento del acumulador");
     					vaciadoMemoria(instruccionContador,  acumulador,   registroInstruccion,  codigoOperacion,operando,memoria);
@@ -114,7 +246,7 @@ int main(){
         				//subtract
         				case 31:
         					acumulador -=memoria[operando];
-        						if(acumulador > 9999 || acumulador < -9999){
+        						if(acumulador > 99999 || acumulador < -99999){
     					// error fatal
     					printf("error fatal desbordamiento del acumulador");
     					vaciadoMemoria(instruccionContador,  acumulador,   registroInstruccion,  codigoOperacion, operando, memoria);
@@ -135,7 +267,7 @@ int main(){
         						//multiply
         						case 33:
         							acumulador*=memoria[operando];
-        								if(acumulador > 9999 || acumulador < -9999){
+        								if(acumulador > 99999 || acumulador < -99999){
     					// error fatal
     					printf("error fatal desbordamiento del acumulador");
     					vaciadoMemoria(instruccionContador,  acumulador,    registroInstruccion,  codigoOperacion,operando,  memoria);
@@ -143,6 +275,27 @@ int main(){
 							}
         							instruccionContador++;
         						break;
+        						//modulo
+        						case 34:
+        								if(memoria[operando]==0){
+        							printf("no se puede dividir entre cero");
+        							vaciadoMemoria(instruccionContador,  acumulador,    registroInstruccion,  codigoOperacion, operando, memoria);
+        							return 0;
+        						}
+        						acumulador %=memoria[operando];
+        						instruccionContador++;
+        							break;
+        							//potencia
+        							case 35:
+        								acumulador = (int)pow(acumulador, memoria[operando]);
+        								if(acumulador > 99999 || acumulador < -99999){
+			    					// error fatal
+			    					printf("error fatal desbordamiento del acumulador");
+			    					vaciadoMemoria(instruccionContador,  acumulador,    registroInstruccion,  codigoOperacion,operando,  memoria);
+			    					return 0;
+										}
+        								instruccionContador++;
+        								break;
         						//branch
         						case 40:
         							instruccionContador=operando;
