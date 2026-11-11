@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "evaluador.h"
+#include "../expresiones/evaluador.h"
 
 #define MAX_LINEAS 100
 #define MAX_TAMANO 200
@@ -1198,9 +1198,9 @@ int validarOtrosComandos() {
 }
 int main() {
 int i;
-    if (!cargarPrograma("programa.simple")) {
-        return 1;
-    }
+    if (!cargarPrograma("../../programas/simple/programa.simple")) {
+    return 1;
+}
     printf("\nDEBUG: Cantidad de lineas cargadas: %d\n",
        cantidadLineas);
 

@@ -1,4 +1,4 @@
 10 input a
-20 if a <> 10 goto 40
+20 if a != 10 goto 40
 30 print a
 40 end
