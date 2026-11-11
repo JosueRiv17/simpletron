@@ -1,74 +1,115 @@
-# Simpletron
+# Proyecto Simpletron
 
-Simulador de una computadora hipotética implementado en lenguaje C.
+Proyecto académico desarrollado en lenguaje C que implementa un simulador Simpletron, un evaluador de expresiones aritméticas y un compilador de un lenguaje sencillo hacia instrucciones SML.
 
-El proyecto parte de una implementación básica de Simpletron y posteriormente incorpora diferentes mejoras para ampliar sus capacidades de memoria, procesamiento y manejo de datos.
+El objetivo es ampliar las funciones del Simpletron original e integrar herramientas que permitan escribir programas, evaluarlos y ejecutarlos en el simulador.
 
-## Características
+## 1. Estructura del proyecto
 
-### Versión original
+```text
+simpletron/
+│
+├── README.md
+│
+├── docs/
+│   ├── requerimientos.md
+│   └── diseno.md
+│
+├── src/
+│   ├── simpletron/
+│   │   ├── SIMPLE-TRON.C
+│   │   ├── Simpletron.dev
+│   │   ├── programa.simp
+│   │   └── version-original/
+│   │
+│   ├── expresiones/
+│   │   ├── evaluador.c
+│   │   └── evaluador.h
+│   │
+│   └── compilador/
+│       ├── simple.c
+│       └── CompiladorSimple.dev
+│
+├── programas/
+│   ├── sml/
+│   │   └── programa.simp
+│   └── simple/
+│       └── programa.simple
+│
+├── pruebas/
+│   └── prueba_evaluador.c
+│
+└── evidencias/
+    ├── ejecuciones/
+    └── git-branch/
+```
 
-* Memoria de instrucciones y datos.
-* Acumulador.
-* Registro de instrucción.
-* Código de operación y operando.
-* Instrucciones básicas de entrada y salida.
-* Carga y almacenamiento de valores.
-* Operaciones aritméticas.
-* Saltos condicionales.
-* Manejo de errores.
-* Vaciado de memoria al finalizar.
+## 2. Módulos del proyecto
 
-### Mejoras implementadas
+### 2.1 Simulador Simpletron
 
-1. **Carga de programas desde archivo**
+Archivo principal: `src/simpletron/SIMPLE-TRON.C`
 
-   * Lectura automática desde `programa.simp`.
-   * Carga manual cuando el archivo no existe.
-   * Validación de valores.
+Implementa una computadora hipotética con las siguientes características:
 
-2. **Memoria de 1000 posiciones**
+- Memoria de 1000 posiciones.
+- Acumulador y registros de control.
+- Carga automática de programas desde `programa.simp`.
+- Entrada manual de instrucciones cuando no existe el archivo.
+- Validación de instrucciones y valores.
+- Operaciones aritméticas.
+- Saltos condicionales.
+- Operación módulo.
+- Exponenciación.
+- Entrada y salida de cadenas mediante códigos ASCII.
+- Soporte para números de punto flotante.
+- Control de errores, incluyendo división entre cero.
 
-   * Direcciones de `000` a `999`.
-   * Operandos de tres dígitos.
-   * Formato de instrucciones `CCAAA`.
+La versión anterior se conserva en `src/simpletron/version-original/`.
 
-3. **Operación módulo**
+### 2.2 Evaluador de expresiones
 
-   * Nueva instrucción para calcular el residuo de una división.
+Archivos:
 
-4. **Exponenciación**
+- `src/expresiones/evaluador.c`
+- `src/expresiones/evaluador.h`
 
-   * Nueva instrucción para calcular potencias.
-   * Control de desbordamiento.
+Este módulo permite evaluar expresiones aritméticas y se utiliza también dentro del compilador.
 
-5. **Salida con salto de línea**
+Entre sus funciones se encuentran:
 
-   * Nueva instrucción para imprimir una nueva línea.
+- Operaciones de suma, resta, multiplicación y división.
+- Uso de paréntesis.
+- Evaluación de expresiones con diferentes niveles de prioridad.
+- Manejo de variables.
+- Operaciones de potencia.
+- Detección de errores en expresiones.
 
-6. **Entrada de cadenas**
+La prueba independiente se encuentra en `pruebas/prueba_evaluador.c`.
 
-   * Almacenamiento de cadenas mediante valores ASCII.
-   * La primera posición almacena la longitud.
-   * Cada posición siguiente almacena la posición y el código ASCII del carácter.
+### 2.3 Compilador del lenguaje Simple
 
-7. **Salida de cadenas**
+Archivo principal: `src/compilador/simple.c`
 
-   * Lectura de la longitud.
-   * Conversión de códigos ASCII a caracteres.
-   * Impresión secuencial de la cadena.
+Permite procesar programas escritos en un lenguaje sencillo y generar instrucciones SML para ejecutarlas en Simpletron.
 
-8. **Soporte de punto flotante**
+Incluye:
 
-   * Memoria independiente para valores `float`.
-   * Acumulador flotante.
-   * Entrada y salida de números decimales.
-   * Suma, resta, multiplicación y división.
-   * Validación de división entre cero.
+- Instrucciones `INPUT`, `LET`, `PRINT` y `END`.
+- Operaciones aritméticas y expresiones con paréntesis.
+- Condiciones `IF`.
+- Saltos mediante `GOTO`.
+- Ciclos y estructuras de control mediante saltos.
+- Uso de variables y constantes.
+- Validación de variables inicializadas.
+- Detección de destinos de salto inexistentes.
+- Generación de código SML.
 
-## Formato de instrucciones
+El evaluador se integra mediante `evaluador.c` y `evaluador.h`.
 
-Las instrucciones utilizan el formato:
+## 3. Formato de instrucciones SML
+
+Las instrucciones del simulador utilizan el formato:
 
 ```text
 CCAAA
@@ -76,21 +117,16 @@ CCAAA
 
 Donde:
 
-* `CC` = código de operación.
-* `AAA` = dirección de memoria.
+- `CC`: código de operación.
+- `AAA`: dirección de memoria u operando.
 
 Ejemplo:
 
 ```text
-10120
+10012
 ```
 
-significa:
-
-```text
-10 → entrada
-120 → dirección de memoria
-```
+Representa una instrucción de entrada utilizando la dirección de memoria 012.
 
 Otro ejemplo:
 
@@ -98,67 +134,83 @@ Otro ejemplo:
 99000
 ```
 
-significa:
+Representa la instrucción de detener la ejecución (`HALT`).
 
-```text
-99 → detener el programa
-000 → operando
-```
+El simulador también incorpora instrucciones adicionales para operaciones con números flotantes, cadenas y otras funciones.
 
-## Almacenamiento de cadenas
+## 4. Programas de prueba
 
-Las cadenas utilizan el formato:
+Los programas de ejemplo se encuentran en:
 
-```text
-XX YYY
-```
+| Archivo | Descripción |
+|---|---|
+| `programas/sml/programa.simp` | Programa de prueba escrito directamente en SML. |
+| `src/simpletron/programa.simp` | Programa utilizado para probar el simulador desde su proyecto de Dev-C++. |
+| `programas/simple/programa.simple` | Programa de ejemplo para probar el compilador. |
+| `pruebas/prueba_evaluador.c` | Prueba independiente del evaluador de expresiones. |
 
-Donde:
+## 5. Compilación y ejecución
 
-* `XX` = posición del carácter o longitud.
-* `YYY` = código ASCII.
+El proyecto fue desarrollado y probado utilizando **Dev-C++**.
 
-Por ejemplo, para `"Mundo"`:
+Los módulos tienen proyectos independientes porque cada uno contiene su propia función `main()` o se integra de manera diferente.
 
-```text
-040 → 05 000
-041 → 01 077
-042 → 02 117
-043 → 03 110
-044 → 04 100
-045 → 05 111
-```
+### Simulador Simpletron
 
-## Compilación
+1. Abrir `src/simpletron/Simpletron.dev`.
+2. Compilar y ejecutar el proyecto.
+3. El simulador buscará automáticamente el archivo `programa.simp` en su directorio de trabajo.
+4. Si no encuentra el archivo, permitirá introducir las instrucciones manualmente.
 
-El proyecto utiliza lenguaje C y la biblioteca matemática.
+### Compilador Simple
 
-Con GCC:
+1. Abrir `src/compilador/CompiladorSimple.dev`.
+2. Verificar que estén incluidas las unidades `simple.c` y `evaluador.c`.
+3. Compilar y ejecutar.
+4. El compilador procesa el programa escrito en `programas/simple/programa.simple` utilizando la ruta configurada para el proyecto.
 
-```bash
-gcc simpletron.c -o simpletron -lm
-```
+### Prueba del evaluador
 
-En Windows:
+Para ejecutar la prueba independiente, crear un proyecto de consola en Dev-C++ e incluir:
 
-```bash
-gcc simpletron.c -o simpletron.exe -lm
-```
+- `pruebas/prueba_evaluador.c`
+- `src/expresiones/evaluador.c`
 
-## Ejecución
+No se debe agregar `evaluador.h` como unidad compilable.
 
-Si existe el archivo:
+**Importante:** Los tres proyectos deben compilarse por separado. No se deben unir sus archivos fuente en un solo proyecto porque existen funciones `main()` independientes.
 
-```text
-programa.simp
-```
+## 6. Evidencias
 
-el simulador intenta cargarlo automáticamente.
+La carpeta `evidencias/` contiene capturas de las ejecuciones del programa y del trabajo realizado con Git.
 
-Si no existe, el programa permite introducir las instrucciones manualmente.
+- `evidencias/ejecuciones/`: pruebas y resultados de ejecución.
+- `evidencias/git-branch/`: ramas, commits y evidencia del control de versiones.
 
-## Proyecto académico
-Se utilizará una memoria flotante independiente (float memoriaFloat[1000]) para almacenar valores de punto flotante. Se utilizará un acumulador flotante independiente (float acumuladorFloat). 
-Las instrucciones 15–23 permitirán entrada, salida y operaciones aritméticas con valores flotantes. La memoria entera y las instrucciones originales permanecerán sin cambios.
+## 7. Control de versiones
 
-Proyecto realizado como práctica de programación y ampliación de un simulador Simpletron.
+El proyecto utiliza Git y GitHub para registrar los cambios y mantener versiones separadas.
+
+Repositorio:
+
+https://github.com/JosueRiv17/simpletron
+
+Ramas principales:
+
+- `main`: versión integrada del proyecto.
+- `simpletronv2`: rama utilizada para desarrollar mejoras del simulador Simpletron.
+
+## 8. Herramientas utilizadas
+
+- Lenguaje C.
+- Dev-C++.
+- Git.
+- GitHub.
+
+## 9. Integrantes
+
+Josué Rivera Flores
+
+## 10. Propósito académico
+
+Este proyecto permite aplicar conceptos de programación estructurada, manejo de memoria, evaluación de expresiones, estructuras de control, compilación, simulación de instrucciones y control de versiones.
